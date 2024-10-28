@@ -1,0 +1,54 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  criterias   Criteria[]   
+  alternatives Alternative[] 
+}
+
+model Criteria {
+  id          Int           @id @default(autoincrement())
+  name        String       
+  weight      Float         
+  type        CriteriaType  
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  evaluations Evaluation[] 
+}
+
+model Alternative {
+  id          Int           @id @default(autoincrement())
+  name        String       
+  description String?
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  evaluations Evaluation[] 
+}
+
+model Evaluation {
+  id            Int         @id @default(autoincrement())
+  value         Float       
+  criteria      Criteria    @relation(fields: [criteriaId], references: [id], onDelete: Cascade)
+  criteriaId    Int
+  alternative   Alternative @relation(fields: [alternativeId], references: [id], onDelete: Cascade)
+  alternativeId Int
+
+  @@unique([criteriaId, alternativeId]) 
+}
+
+enum CriteriaType {
+  COST   
+  BENEFIT 
+}
